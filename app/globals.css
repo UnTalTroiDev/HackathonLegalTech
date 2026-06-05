@@ -142,6 +142,34 @@ body {
   }
 }
 
+/* Título con revelado por palabra tras máscara (estilo saleads "más ventas") */
+@keyframes maskRise {
+  from {
+    transform: translateY(115%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+.mask-word {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding-bottom: 0.12em; /* evita recortar descendentes (g, p, j) */
+  margin-bottom: -0.12em;
+}
+.mask-word > span {
+  display: inline-block;
+  animation: maskRise 0.85s cubic-bezier(0.16, 0.84, 0.3, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mask-word > span {
+    animation: none;
+  }
+}
+
 /* Animación de la galga circular (% conforme) */
 .gauge-ring {
   transition: stroke-dashoffset 1.1s cubic-bezier(0.2, 0.8, 0.2, 1);

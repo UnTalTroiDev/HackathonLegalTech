@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { RevealInit } from "@/components/reveal-init";
+import { MaskTitle } from "@/components/mask-title";
 import {
   accionRecomendada,
   clausulaCorrectiva,
@@ -135,6 +136,42 @@ function Spinner() {
   );
 }
 
+/** Galga circular (% conforme) que se llena de 0→pct al aparecer. */
+function Gauge({ pct }: { pct: number }) {
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    const t = setTimeout(() => setVal(pct), 80);
+    return () => clearTimeout(t);
+  }, [pct]);
+  const r = 26;
+  const c = 2 * Math.PI * r;
+  const off = c * (1 - val / 100);
+  return (
+    <div
+      className="relative grid h-16 w-16 shrink-0 place-items-center"
+      role="img"
+      aria-label={`${pct}% de la cartera conforme`}
+    >
+      <svg viewBox="0 0 64 64" className="h-16 w-16 -rotate-90">
+        <circle cx="32" cy="32" r={r} fill="none" stroke="var(--color-rule)" strokeWidth="6" />
+        <circle
+          className="gauge-ring"
+          cx="32"
+          cy="32"
+          r={r}
+          fill="none"
+          stroke="var(--color-conforme)"
+          strokeWidth="6"
+          strokeLinecap="round"
+          strokeDasharray={c}
+          strokeDashoffset={off}
+        />
+      </svg>
+      <span className="absolute font-display text-sm text-ink tnum">{pct}%</span>
+    </div>
+  );
+}
+
 type Toast = { id: number; msg: string; tipo: "ok" | "error" };
 type Orden = "prioridad" | "confianza-asc" | "confianza-desc" | "titular";
 
@@ -160,6 +197,7 @@ export default function Page() {
   const [orden, setOrden] = useState<Orden>("prioridad");
   const [ocultarRevisados, setOcultarRevisados] = useState(false);
   const [tipoDoc, setTipoDoc] = useState<string>("todos");
+  const [intakeAbierto, setIntakeAbierto] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   function toast(msg: string, tipo: "ok" | "error" = "ok") {
@@ -324,6 +362,7 @@ export default function Page() {
         }
       }
       setPendientes([]);
+      setIntakeAbierto(false);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error desconocido.");
     } finally {
@@ -341,6 +380,7 @@ export default function Page() {
       setEsDemo(true);
       setFiltro("prioritarios");
       setTipoDoc("todos");
+      setIntakeAbierto(false);
       toast(`Cargados ${data.registros.length} documentos de ejemplo`);
     } finally {
       setCargando(false);
@@ -466,39 +506,43 @@ export default function Page() {
       </header>
 
       <main id="contenido" className="mx-auto w-full max-w-5xl flex-1 px-5 py-10 sm:px-8">
-        {/* Hero */}
-        <section className="reveal grid items-start gap-6 sm:grid-cols-[1fr_auto]">
+        {/* Hero — solo en la landing (modo enfocado oculta esto al haber resultados) */}
+        {registros.length === 0 && (
+        <section className="grid items-start gap-6 sm:grid-cols-[1fr_auto]">
           <div>
             <p className="font-mono text-[13px] font-semibold uppercase tracking-[0.22em] text-acento">
               Debida diligencia · Protección de datos
             </p>
-            <h1 className="font-display mt-3 text-4xl leading-[1.05] tracking-tight text-ink sm:text-[3.4rem]">
-              Autorización de datos y<br className="hidden sm:block" /> reporte a centrales de riesgo
-            </h1>
-            <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-ink-soft">
+            <MaskTitle
+              text="Autorización de datos y reporte a centrales de riesgo"
+              className="font-display mt-3 text-4xl leading-[1.05] tracking-tight text-ink sm:text-[3.4rem]"
+            />
+            <p className="mt-4 max-w-xl text-base leading-relaxed text-ink-soft">
               Revisa contratos en PDF —con o sin OCR— e identifica si autorizan el reporte del
-              comportamiento crediticio, incluido el dato negativo, ante centrales de riesgo. Marco
-              aplicado:{" "}
-              <span className="text-ink">Ley 1266 de 2008</span>,{" "}
-              <span className="text-ink">Ley 2157 de 2021</span>,{" "}
-              <span className="text-ink">Ley 2573 de 2026</span>,{" "}
-              <span className="text-ink">Ley 1581 de 2012</span> y{" "}
-              <span className="text-ink">Decreto 1377 de 2013</span>. La IA prioriza; el abogado
-              decide.
-            </p>
-            <p className="mt-4 inline-flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[13px] text-ink-soft">
-              <span className="inline-flex items-center gap-1.5">
-                <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-oxblood" /> Cerebras · texto
-              </span>
-              <span aria-hidden className="text-ink-faint">+</span>
-              <span className="inline-flex items-center gap-1.5">
-                <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-conforme" /> Claude visión ·
-                escaneados
-              </span>
+              comportamiento crediticio, incluido el dato negativo, ante centrales de riesgo.{" "}
+              <span className="text-ink">La IA prioriza; el abogado decide.</span>
             </p>
 
-            {/* Tira de credibilidad: vende el valor de un vistazo */}
-            <dl className="mt-6 grid max-w-xl grid-cols-3 gap-3">
+            {/* CTAs primarios */}
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <button
+                onClick={cargarDemo}
+                disabled={cargando}
+                className="inline-flex items-center gap-2 rounded-xl bg-oxblood px-6 py-3 text-base font-semibold text-paper shadow-sm transition hover:bg-oxblood-soft active:scale-[0.98] disabled:opacity-50"
+              >
+                {cargando && esDemo && <Spinner />}
+                Cargar expediente de ejemplo
+              </button>
+              <button
+                onClick={() => inputRef.current?.click()}
+                className="inline-flex items-center gap-2 rounded-xl border-2 border-oxblood/30 bg-paper px-6 py-3 text-base font-semibold text-oxblood transition hover:border-oxblood active:scale-[0.98]"
+              >
+                Subir PDFs
+              </button>
+            </div>
+
+            {/* Tira de credibilidad */}
+            <dl className="mt-7 grid max-w-xl grid-cols-3 gap-3">
               {[
                 { v: "Minutos", l: "lo que tomaba 48 horas" },
                 { v: "Con y sin OCR", l: "lee texto y escaneados" },
@@ -510,11 +554,39 @@ export default function Page() {
                 </div>
               ))}
             </dl>
+
+            {/* Marco legal (compacto) + motor */}
+            <div className="mt-6 flex flex-wrap items-center gap-1.5">
+              <span className="mr-1 font-mono text-[12px] uppercase tracking-wide text-ink-faint">
+                Marco:
+              </span>
+              {["Ley 1266/2008", "Ley 2157/2021", "Ley 2573/2026", "Ley 1581/2012", "Decreto 1377/2013"].map(
+                (l) => (
+                  <span
+                    key={l}
+                    className="rounded-md border border-rule bg-paper-2/50 px-2 py-1 font-mono text-[12px] text-ink-soft"
+                  >
+                    {l}
+                  </span>
+                ),
+              )}
+            </div>
+            <p className="mt-3 inline-flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[12px] text-ink-faint">
+              <span className="inline-flex items-center gap-1.5">
+                <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-oxblood" /> Cerebras · texto
+              </span>
+              <span aria-hidden>+</span>
+              <span className="inline-flex items-center gap-1.5">
+                <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-conforme" /> Claude visión ·
+                escaneados
+              </span>
+            </p>
           </div>
           <div className="hidden justify-self-end sm:block">
             <Sello />
           </div>
         </section>
+        )}
 
         {/* Intake / carga */}
         <section
@@ -522,6 +594,16 @@ export default function Page() {
           style={{ animationDelay: "80ms" }}
           aria-label="Cargar documentos"
         >
+          <input
+            ref={inputRef}
+            id="files"
+            type="file"
+            accept="application/pdf"
+            multiple
+            hidden
+            onChange={(e) => añadir(Array.from(e.target.files ?? []))}
+          />
+          {(registros.length === 0 || intakeAbierto) && (
           <div
             onDragOver={(e) => {
               e.preventDefault();
@@ -550,15 +632,6 @@ export default function Page() {
             <p className="mt-1.5 font-mono text-[13px] text-ink-faint">
               PDF con y sin OCR · hasta cientos de documentos
             </p>
-            <input
-              ref={inputRef}
-              id="files"
-              type="file"
-              accept="application/pdf"
-              multiple
-              hidden
-              onChange={(e) => añadir(Array.from(e.target.files ?? []))}
-            />
             {pendientes.length > 0 && (
               <ul className="mt-4 flex max-w-full flex-wrap justify-center gap-1.5">
                 {pendientes.map((f, i) => (
@@ -580,34 +653,47 @@ export default function Page() {
               </ul>
             )}
           </div>
+          )}
 
           <div className="mt-4 flex flex-wrap items-center gap-3">
-            <button
-              onClick={analizar}
-              disabled={cargando}
-              className="inline-flex items-center gap-2 rounded-lg bg-ink px-4 py-2 text-sm font-medium text-paper transition hover:bg-oxblood disabled:opacity-50"
-            >
-              {cargando
-                ? "Analizando…"
-                : pendientes.length
-                  ? `Analizar ${pendientes.length} documento(s)`
-                  : "Seleccionar PDFs"}
-            </button>
-            <button
-              onClick={cargarDemo}
-              disabled={cargando}
-              className="inline-flex items-center gap-2 rounded-lg border border-rule bg-paper px-4 py-2 text-sm font-medium text-ink transition hover:border-ink/40 disabled:opacity-50"
-            >
-              {cargando && esDemo && <Spinner />}
-              Cargar expediente de ejemplo
-            </button>
-            {pendientes.length > 0 && (
+            {registros.length > 0 && (
               <button
-                onClick={() => setPendientes([])}
-                className="text-sm text-ink-faint underline-offset-4 hover:text-ink hover:underline"
+                onClick={() => setIntakeAbierto((v) => !v)}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-rule bg-paper px-4 py-2 text-sm font-medium text-ink transition hover:border-ink/40"
               >
-                Vaciar cola
+                {intakeAbierto ? "Ocultar zona de carga" : "+ Analizar más documentos"}
               </button>
+            )}
+            {(registros.length === 0 || intakeAbierto) && (
+              <>
+                <button
+                  onClick={analizar}
+                  disabled={cargando}
+                  className="inline-flex items-center gap-2 rounded-lg bg-oxblood px-5 py-2.5 text-sm font-semibold text-paper shadow-sm transition hover:bg-oxblood-soft active:scale-[0.98] disabled:opacity-50"
+                >
+                  {cargando
+                    ? "Analizando…"
+                    : pendientes.length
+                      ? `Analizar ${pendientes.length} documento(s)`
+                      : "Seleccionar PDFs"}
+                </button>
+                <button
+                  onClick={cargarDemo}
+                  disabled={cargando}
+                  className="inline-flex items-center gap-2 rounded-lg border border-rule bg-paper px-4 py-2.5 text-sm font-medium text-ink transition hover:border-ink/40 disabled:opacity-50"
+                >
+                  {cargando && esDemo && <Spinner />}
+                  Cargar expediente de ejemplo
+                </button>
+                {pendientes.length > 0 && (
+                  <button
+                    onClick={() => setPendientes([])}
+                    className="text-sm text-ink-faint underline-offset-4 hover:text-ink hover:underline"
+                  >
+                    Vaciar cola
+                  </button>
+                )}
+              </>
             )}
             {registros.length > 0 && (
               <div className="ml-auto flex flex-wrap gap-2">
@@ -662,6 +748,7 @@ export default function Page() {
             )}
           </div>
 
+          {(registros.length === 0 || intakeAbierto) && (
           <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-rule pt-3">
             <span className="font-mono text-[12px] uppercase tracking-wide text-ink-faint">
               PDFs de prueba:
@@ -677,6 +764,7 @@ export default function Page() {
               </a>
             ))}
           </div>
+          )}
 
           {cargando && progreso.total > 0 && (
             <div className="mt-4" aria-live="polite">
@@ -792,22 +880,11 @@ export default function Page() {
 
             {/* Panel ejecutivo */}
             <section
-              className="mt-7 flex flex-col gap-4 rounded-lg border border-rule bg-paper-2/50 p-5 sm:flex-row sm:items-center sm:justify-between"
+              className="mt-7 flex flex-col gap-4 rounded-lg border border-rule border-l-4 border-l-oxblood bg-paper-2/50 p-5 sm:flex-row sm:items-center sm:justify-between"
               aria-label="Veredicto ejecutivo"
             >
               <div className="flex items-center gap-4">
-                <div
-                  className="grid h-16 w-16 shrink-0 place-items-center rounded-full"
-                  style={{
-                    background: `conic-gradient(var(--color-conforme) ${pctConforme * 3.6}deg, var(--color-rule) 0deg)`,
-                  }}
-                  role="img"
-                  aria-label={`${pctConforme}% de la cartera conforme`}
-                >
-                  <span className="grid h-12 w-12 place-items-center rounded-full bg-paper-2 font-display text-sm text-ink tnum">
-                    {pctConforme}%
-                  </span>
-                </div>
+                <Gauge pct={pctConforme} />
                 <div>
                   <p className="font-mono text-[12px] uppercase tracking-[0.14em] text-ink-faint">
                     Cartera conforme
@@ -954,7 +1031,7 @@ export default function Page() {
                 return (
                   <article
                     key={r.id}
-                    className={`rise relative overflow-hidden rounded-lg border border-rule bg-paper-2/50 before:absolute before:inset-y-0 before:left-0 before:w-1 before:content-[''] ${acento} ${
+                    className={`rise relative overflow-hidden rounded-lg border border-rule bg-paper-2/50 transition-shadow hover:shadow-md before:absolute before:inset-y-0 before:left-0 before:w-1 before:content-[''] ${acento} ${
                       revisado ? "opacity-55" : ""
                     }`}
                     style={{ animationDelay: `${Math.min(i, 8) * 45}ms` }}

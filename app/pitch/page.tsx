@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { RevealInit } from "@/components/reveal-init";
+import { MaskTitle } from "@/components/mask-title";
 
 export const metadata: Metadata = {
   title: "Pitch",
@@ -43,13 +44,14 @@ export default function Pitch() {
 
       <main className="mx-auto w-full max-w-4xl flex-1 px-5 py-12 sm:px-8">
         {/* Hero */}
-        <section className="reveal">
+        <section>
           <p className="font-mono text-[13px] font-semibold uppercase tracking-[0.22em] text-acento">
             Pitch · HackLegalTech · Reto N.º 1
           </p>
-          <h1 className="font-display mt-3 text-4xl leading-[1.05] tracking-tight text-ink sm:text-6xl">
-            Due diligence de datos en horas, no en semanas
-          </h1>
+          <MaskTitle
+            text="Smart Due Diligence de documentos en minutos, no en semanas"
+            className="font-display mt-3 text-4xl leading-[1.05] tracking-tight text-ink sm:text-6xl"
+          />
           <p className="mt-5 max-w-2xl text-[17px] leading-relaxed text-ink-soft">
             Revisamos cientos de contratos en PDF —con y sin OCR— e identificamos, con cita textual
             y página, si autorizan el reporte a centrales de riesgo. La IA prioriza; el abogado
@@ -58,7 +60,7 @@ export default function Pitch() {
           <div className="mt-7 flex flex-wrap gap-3">
             <Link
               href="/"
-              className="inline-flex items-center rounded-lg bg-ink px-5 py-2.5 text-sm font-medium text-paper transition hover:bg-oxblood"
+              className="inline-flex items-center rounded-lg bg-oxblood px-5 py-2.5 text-sm font-semibold text-paper shadow-sm transition hover:bg-oxblood-soft active:scale-[0.98]"
             >
               Probar la demo
             </Link>
@@ -234,7 +236,7 @@ export default function Pitch() {
           </p>
           <Link
             href="/"
-            className="mt-5 inline-flex items-center rounded-lg bg-ink px-6 py-3 text-sm font-medium text-paper transition hover:bg-oxblood"
+            className="mt-5 inline-flex items-center rounded-lg bg-oxblood px-6 py-3 text-sm font-semibold text-paper shadow-sm transition hover:bg-oxblood-soft active:scale-[0.98]"
           >
             Abrir la demo →
           </Link>
