@@ -1,0 +1,5 @@
+[
+  { "archivo": "contrato_001.pdf", "esperado_centrales": "presente", "esperado_tratamiento": "presente" },
+  { "archivo": "contrato_002.pdf", "esperado_centrales": "ambigua", "esperado_tratamiento": "presente" },
+  { "archivo": "escaneo_003.pdf", "esperado_centrales": "ausente", "esperado_tratamiento": "ausente" }
+]

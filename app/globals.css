@@ -1,0 +1,154 @@
+@import "tailwindcss";
+
+/* ── Tokens de diseño: fresco y moderno ──────────────────────────────────── */
+@theme inline {
+  --font-display: var(--ff-display);
+  --font-sans: var(--ff-sans);
+  --font-mono: var(--ff-mono);
+
+  /* Fondo claro y cálido + tinta legible */
+  --color-paper: #fbfaf8;
+  --color-paper-2: #f3f2ee;
+  --color-ink: #1b1c1e;
+  --color-ink-soft: #4b4f54;
+  --color-ink-faint: #5f6469; /* ≈5:1 sobre el fondo → cumple WCAG AA en texto pequeño */
+  --color-rule: #e7e4dd;
+
+  /* Primario teal (marca/CTA) — "oxblood" se mantiene como nombre de token */
+  --color-oxblood: #0f766e;
+  --color-oxblood-soft: #0d9488;
+
+  /* Acento coral/terracota para puntos de energía */
+  --color-acento: #c2410c;
+  --color-acento-soft: #ea580c;
+
+  /* Señales de riesgo, vívidas pero legibles como texto */
+  --color-conforme: #15803d;
+  --color-conforme-bg: #dcf5e3;
+  --color-ambiguo: #b45309;
+  --color-ambiguo-bg: #fbeccd;
+  --color-ausente: #be123c;
+  --color-ausente-bg: #fbe0e6;
+}
+
+/* ── Fondo: claro con tintes teal/coral muy sutiles + grano ligero ───────── */
+.paper {
+  background-color: var(--color-paper);
+  background-image:
+    radial-gradient(120% 120% at 100% 0%, rgba(13, 148, 136, 0.07) 0%, transparent 44%),
+    radial-gradient(120% 120% at 0% 100%, rgba(234, 88, 12, 0.05) 0%, transparent 46%);
+  position: relative;
+}
+.paper::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.35;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+body {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* Numerales y titulares: serif editorial con ligaduras y old-style */
+.font-display {
+  font-family: var(--font-display), Georgia, serif;
+  font-optical-sizing: auto;
+}
+
+/* Cifras tabulares para estadísticas */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* ── Selección, scrollbar, foco accesible ────────────────────────────────── */
+::selection {
+  background: var(--color-oxblood);
+  color: var(--color-paper);
+}
+* {
+  scrollbar-color: var(--color-ink-faint) transparent;
+}
+:focus-visible {
+  outline: 2px solid var(--color-oxblood);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* ── Animaciones de entrada (CSS puro, escalonadas) ──────────────────────── */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes sealIn {
+  from {
+    opacity: 0;
+    transform: rotate(-18deg) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(-8deg) scale(1);
+  }
+}
+.rise {
+  opacity: 0;
+  animation: rise 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+.seal-in {
+  animation: sealIn 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise,
+  .seal-in {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── Scroll-reveal (estilo saleads): aparece al entrar, se atenúa al salir ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 0.7s cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+  will-change: opacity, transform;
+}
+.reveal-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal-in {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Animación de la galga circular (% conforme) */
+.gauge-ring {
+  transition: stroke-dashoffset 1.1s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Línea decorativa tipo expediente (margen de cuaderno legal) */
+.ledger-rule {
+  background-image: linear-gradient(var(--color-rule) 1px, transparent 1px);
+  background-size: 100% 2rem;
+}
