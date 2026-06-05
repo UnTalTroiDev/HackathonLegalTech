@@ -4,6 +4,13 @@
 > cero**, el código ya existe en esta carpeta. Lee este documento, corre `npm run dev`
 > y `npm run build` para confirmar que todo está verde, y continúa desde donde quedó.
 
+> ⚠️ **EL RETO PUEDE CAMBIAR EN CUALQUIER MOMENTO.** Hoy el proyecto resuelve el
+> Reto N.º 1 (due diligence de habeas data), pero en un hackathon el enunciado puede
+> cambiar de improviso. Si el usuario te entrega un **reto nuevo**, tu trabajo es
+> **reorientar TODO el proyecto a ese reto** reutilizando esta misma base (ver la
+> sección **"Si el reto cambia (pivote)"** al final). No reconstruyas desde cero: el
+> motor, el dashboard, el streaming, los PDFs, los filtros y el diseño se reaprovechan.
+
 ## Proyecto
 - **Nombre:** Legamio Audit (sub-producto de la marca **Legamio**).
 - **Qué es:** MVP legal-tech para el **Reto N.º 1 de HackLegalTech** (Colombia). Hace
@@ -88,10 +95,30 @@ prueba.
 - Verificar la Ley 2573/2026.
 - Opcionales: chat sobre la cartera, checklist de cumplimiento por norma, historial de lotes.
 
-## Si el reto cambia (pivote)
-La arquitectura es genérica para "revisar N documentos y clasificar/extraer algo". Para
-pivotar solo se tocan: `lib/types.ts` (esquema), `lib/analyze.ts` (prompt),
-`lib/sample.ts` (demo) y etiquetas de UI. **Todo lo demás se reutiliza.**
+## Si el reto cambia (pivote) — IMPORTANTE
+**El reto puede cambiar en cualquier momento.** La arquitectura es deliberadamente
+genérica para "revisar N documentos y clasificar/extraer algo", así que un pivote es
+rápido. Cuando el usuario te dé un reto nuevo:
+
+1. **Pídele estos 4 datos** (si no vienen en el enunciado):
+   - El **enunciado completo** del nuevo reto.
+   - Qué hay que **detectar / clasificar / extraer**.
+   - Los **estados/categorías** posibles (p. ej. presente/ausente, sí/no, niveles…).
+   - El **marco legal o reglas** aplicables (si las hay) y el **tipo de documentos** de entrada.
+2. **Solo cambia estas 4 piezas** (el resto se reutiliza tal cual):
+   - `lib/types.ts` → el **esquema Zod** (qué se extrae y qué estados existen) + las
+     reglas de prioridad/acciones.
+   - `lib/analyze.ts` → el **prompt legal/del dominio** (`SYSTEM_PROMPT`).
+   - `lib/sample.ts` → los **datos demo** acordes al nuevo reto.
+   - **Etiquetas de UI** (textos del hero, columnas, filtros, pitch).
+3. **Se reutiliza sin tocar:** motor híbrido Cerebras + Claude visión, OCR/extracción,
+   streaming, dashboard priorizado, filtros/búsqueda/orden, panel ejecutivo + resumen,
+   informe/oficio en PDF, cláusula/plantilla generada, harness de eval, diseño y marca.
+4. Tras pivotar: `npx tsc --noEmit`, `npm run build`, `npm run samples` (si aplica) y
+   verifica con el modo demo. Luego commit + push.
+
+> Si la marca o el nombre ya no encajan con el nuevo reto, pregúntale al usuario antes
+> de cambiarlos (hoy es "Legamio Audit").
 
 ---
 Antes de cambiar nada: corre `npm run dev` y `npm run build` para confirmar que todo sigue
